@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch'
 import { DocumentPreview } from '@/components/shared/DocumentPreview'
 import { CustomerSelector } from '@/components/shared/CustomerSelector'
+import { FileUpload } from '@/components/shared/FileUpload'
 import { apiMutate, useApi } from '@/hooks/use-api'
 import { useAppContext } from '@/lib/app-context'
 import type { Quotation, QuotationItem, Customer } from '@/types'
@@ -47,6 +48,7 @@ export function QuotationForm({ editId }: QuotationFormProps) {
   const [saving, setSaving] = useState(false)
   const [invoicePct, setInvoicePct] = useState(100)
   const [showInvoiceDialog, setShowInvoiceDialog] = useState(false)
+  const [poDocument, setPoDocument] = useState('')
 
   const [customerAddress, setCustomerAddress] = useState('')
 
@@ -64,6 +66,7 @@ export function QuotationForm({ editId }: QuotationFormProps) {
       setShowSignature(existing.showSignature ?? true)
       setDiscount(existing.discount || 0)
       setTax(existing.tax || 0)
+      setPoDocument(existing.poDocument || '')
       if (existing.items && existing.items.length > 0) {
         setItems(existing.items.map(it => ({ ...it, components: it.components || [] })))
       }
@@ -132,7 +135,7 @@ export function QuotationForm({ editId }: QuotationFormProps) {
       const payload = {
         customer, project, date, validity, terms, status, currency,
         attnName, attnEmail, salesPerson, showSignature,
-        discount, tax,
+        discount, tax, poDocument,
         companyCode: company.code,
         items: items.map(i => ({ ...i, q: Number(i.q), r: Number(i.r), t: Number(i.q) * Number(i.r) })),
         _user: 'System',
@@ -246,6 +249,14 @@ export function QuotationForm({ editId }: QuotationFormProps) {
                 <Switch checked={showSignature} onCheckedChange={setShowSignature} id="show-sig" />
                 <Label htmlFor="show-sig" className="cursor-pointer">Show Signature Block</Label>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle className="text-base">Customer PO Document</CardTitle></CardHeader>
+            <CardContent>
+              <p className="text-xs text-slate-500 mb-2">Upload the customer&apos;s purchase order document (PDF, image, etc.)</p>
+              <FileUpload value={poDocument} onChange={setPoDocument} accept="image/*,.pdf,.doc,.docx" label="customer PO" />
             </CardContent>
           </Card>
 

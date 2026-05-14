@@ -29,6 +29,24 @@ export function CustomersView() {
   const { data, refresh } = useApi<CustomersResponse>(`/api/customers?${params}`)
   const customers = data?.items || []
 
+  const handleDuplicate = useCallback(async (id: string) => {
+    try {
+      const original = await (await fetch(`/api/customers/${id}`)).json()
+      if (!original || original.error) { toast.error('Failed to load customer'); return }
+      const payload = {
+        company: original.company + ' (Copy)', contact: original.contact,
+        email: original.email, phone: original.phone, tax: original.tax,
+        billing: original.billing, shipping: original.shipping, notes: original.notes,
+        _user: 'System',
+      }
+      const created = await apiMutate('/api/customers', 'POST', payload)
+      toast.success(`Customer duplicated: ${(created as Record<string, string>).code}`)
+      refresh()
+    } catch (err) {
+      toast.error((err as Error).message)
+    }
+  }, [refresh])
+
   const handleDelete = useCallback(async (id: string) => {
     try {
       await apiMutate(`/api/customers/${id}`, 'DELETE')
@@ -61,6 +79,7 @@ export function CustomersView() {
                   <RowActions
                     onView={() => router.push(`/customers/${c.id || c._id}`)}
                     onEdit={() => router.push(`/customers/${c.id || c._id}/edit`)}
+                    onDuplicate={() => handleDuplicate(c.id || c._id || '')}
                     onDelete={() => handleDelete(c.id || c._id || '')}
                   />
                 </TableCell>

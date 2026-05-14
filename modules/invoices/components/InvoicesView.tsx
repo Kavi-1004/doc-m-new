@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useApi, apiMutate } from '@/hooks/use-api'
+import { useAppContext } from '@/lib/app-context'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { FilterBar } from '@/components/shared/FilterBar'
 import { RowActions } from '@/components/shared/RowActions'
@@ -23,6 +24,7 @@ interface InvoicesResponse {
 
 export function InvoicesView() {
   const router = useRouter()
+  const { company } = useAppContext()
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(20)
@@ -30,6 +32,28 @@ export function InvoicesView() {
   if (search) params.set('q', search)
   const { data, refresh } = useApi<InvoicesResponse>(`/api/invoices?${params}`)
   const invoiceList = data?.items || []
+
+  const handleDuplicate = useCallback(async (id: string) => {
+    try {
+      const original = await (await fetch(`/api/invoices/${id}`)).json()
+      if (!original || original.error) { toast.error('Failed to load invoice'); return }
+      const payload = {
+        customer: original.customer, linkedQuote: original.linkedQuote,
+        date: new Date().toISOString().slice(0, 10), due: original.due,
+        total: original.total, paid: 0, status: 'UNPAID',
+        items: original.items, notes: original.notes, terms: original.terms,
+        attnName: original.attnName, attnEmail: original.attnEmail,
+        salesPerson: original.salesPerson, poNumber: original.poNumber,
+        project: original.project, discount: original.discount, tax: original.tax,
+        companyCode: company.code, _user: 'System',
+      }
+      const created = await apiMutate('/api/invoices', 'POST', payload)
+      toast.success(`Invoice duplicated: ${(created as Record<string, string>).number}`)
+      refresh()
+    } catch (err) {
+      toast.error((err as Error).message)
+    }
+  }, [company.code, refresh])
 
   const handleDelete = useCallback(async (id: string) => {
     try {
@@ -68,6 +92,7 @@ export function InvoicesView() {
                   <RowActions
                     onView={() => router.push(`/invoices/${i.id || i._id}`)}
                     onEdit={() => router.push(`/invoices/${i.id || i._id}/edit`)}
+                    onDuplicate={() => handleDuplicate(i.id || i._id || '')}
                     onDelete={() => handleDelete(i.id || i._id || '')}
                   />
                 </TableCell>

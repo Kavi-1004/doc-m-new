@@ -10,9 +10,10 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DocumentPreview } from '@/components/shared/DocumentPreview'
+import { QuotationSelector } from '@/components/shared/QuotationSelector'
 import { apiMutate, useApi } from '@/hooks/use-api'
 import { useAppContext } from '@/lib/app-context'
-import type { PurchaseOrder, PurchaseOrderItem } from '@/types'
+import type { PurchaseOrder, PurchaseOrderItem, Quotation } from '@/types'
 
 const emptyItem = (): PurchaseOrderItem => ({ d: '', q: 1, u: 'pcs', r: 0, t: 0 })
 
@@ -144,7 +145,16 @@ export function PurchaseOrderForm({ editId }: PurchaseOrderFormProps) {
                 </div>
                 <div>
                   <Label>Linked Quote</Label>
-                  <Input value={linkedQuote} onChange={e => setLinkedQuote(e.target.value)} placeholder="e.g. AB-SQ-2024-0001" />
+                  <QuotationSelector value={linkedQuote} onChange={(val: string, q?: Quotation) => {
+                    setLinkedQuote(val)
+                    if (q && q.items && Array.isArray(q.items)) {
+                      const qItems = q.items as Array<Record<string, unknown>>
+                      setItems(qItems.map(i => ({
+                        d: String(i.d || ''), q: Number(i.q) || 1, u: String(i.u || 'pcs'),
+                        r: Number(i.r) || 0, t: (Number(i.q) || 0) * (Number(i.r) || 0),
+                      })))
+                    }
+                  }} placeholder="Select or search quotation..." />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">

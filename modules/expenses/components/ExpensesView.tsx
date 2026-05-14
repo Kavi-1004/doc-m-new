@@ -35,6 +35,24 @@ export function ExpensesView() {
   const { data, refresh } = useApi<ExpensesResponse>(`/api/expenses?${params}`)
   const expenseList = data?.items || []
 
+  const handleDuplicate = useCallback(async (id: string) => {
+    try {
+      const original = await (await fetch(`/api/expenses/${id}`)).json()
+      if (!original || original.error) { toast.error('Failed to load expense'); return }
+      const payload = {
+        project: original.project, supplier: original.supplier,
+        category: original.category, amount: original.amount,
+        date: new Date().toISOString().slice(0, 10),
+        notes: original.notes, _user: 'System',
+      }
+      const created = await apiMutate('/api/expenses', 'POST', payload)
+      toast.success(`Expense duplicated: ${(created as Record<string, string>).number}`)
+      refresh()
+    } catch (err) {
+      toast.error((err as Error).message)
+    }
+  }, [refresh])
+
   const handleDelete = useCallback(async (id: string) => {
     try {
       await apiMutate(`/api/expenses/${id}`, 'DELETE')
@@ -80,6 +98,7 @@ export function ExpensesView() {
                   <RowActions
                     onView={() => router.push(`/expenses/${e.id || e._id}`)}
                     onEdit={() => router.push(`/expenses/${e.id || e._id}/edit`)}
+                    onDuplicate={() => handleDuplicate(e.id || e._id || '')}
                     onDelete={() => handleDelete(e.id || e._id || '')}
                   />
                 </TableCell>
