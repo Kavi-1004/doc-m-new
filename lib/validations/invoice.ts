@@ -1,0 +1,27 @@
+import { z } from 'zod'
+
+export const invoiceSchema = z.object({
+  number: z.string().optional(),
+  customer: z.string().min(1, 'Customer is required'),
+  linkedQuote: z.string().optional(),
+  date: z.string().optional(),
+  due: z.string().optional(),
+  total: z.number().min(0).optional(),
+  paid: z.number().min(0).optional(),
+  status: z.enum(['PAID', 'UNPAID', 'PARTIAL', 'OVERDUE', 'VOID']).optional(),
+  progressPct: z.number().int().min(0).max(100).optional(),
+  projectTotal: z.number().min(0).optional(),
+  billedToDate: z.number().min(0).optional(),
+  items: z.array(z.record(z.unknown())).optional(),
+  notes: z.string().max(2000).optional(),
+  attnName: z.string().optional(),
+  attnEmail: z.string().optional(),
+  salesPerson: z.string().optional(),
+  poNumber: z.string().optional(),
+  project: z.string().optional(),
+  showSignature: z.boolean().optional(),
+  discount: z.number().min(0).optional(),
+  tax: z.number().min(0).optional(),
+  companyCode: z.string().optional(),
+  _user: z.string().optional(),
+})

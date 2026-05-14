@@ -1,0 +1,246 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Company {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  name      String
+  logo      String   @default("")
+  currency  String   @default("AED")
+  regNo     String   @default("")
+  taxNo     String   @default("")
+  address   String   @default("")
+  phone     String   @default("")
+  email     String   @default("")
+  bank      String   @default("")
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("companies")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String   @default("")
+  role      String   @default("VIEWER")
+  company   String
+  status    String   @default("Active")
+  lastLogin String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Customer {
+  id       String   @id @default(cuid())
+  code     String   @unique
+  company  String
+  contact  String
+  email    String   @default("")
+  phone    String   @default("")
+  tax      String   @default("")
+  terms    String   @default("Net 30")
+  credit   Float    @default(0)
+  billing  String   @default("")
+  shipping String   @default("")
+  notes    String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("customers")
+}
+
+model Supplier {
+  id       String   @id @default(cuid())
+  code     String   @unique
+  company  String
+  contact  String
+  email    String   @default("")
+  phone    String   @default("")
+  tax      String   @default("")
+  terms    String   @default("Net 30")
+  address  String   @default("")
+  bank     String   @default("")
+  notes    String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("suppliers")
+}
+
+model Quotation {
+  id        String   @id @default(cuid())
+  number    String   @unique
+  rev       Int      @default(0)
+  customer  String
+  project   String   @default("")
+  date      String   @default("")
+  validity  String   @default("")
+  status    String   @default("DRAFT")
+  currency  String   @default("AED")
+  total     Float    @default(0)
+  items     Json     @default("[]")
+  terms     String   @default("")
+  attnName  String   @default("")
+  attnEmail String   @default("")
+  salesPerson String @default("")
+  showSignature Boolean @default(true)
+  discount      Float   @default(0)
+  tax           Float   @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("quotations")
+}
+
+model SupplierQuote {
+  id          String   @id @default(cuid())
+  number      String   @unique
+  linkedQuote String   @default("")
+  supplier    String
+  date        String   @default("")
+  amount      Float    @default(0)
+  status      String   @default("PENDING")
+  notes       String   @default("")
+  items       Json     @default("[]")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("supplier_quotes")
+}
+
+model PurchaseOrder {
+  id               String   @id @default(cuid())
+  number           String   @unique
+  supplier         String
+  linkedQuote      String   @default("")
+  date             String   @default("")
+  amount           Float    @default(0)
+  status           String   @default("PENDING")
+  items            Json     @default("[]")
+  notes            String   @default("")
+  expectedDelivery String   @default("")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("purchase_orders")
+}
+
+model DeliveryOrder {
+  id              String   @id @default(cuid())
+  number          String   @unique
+  customer        String
+  linkedQuote     String   @default("")
+  date            String   @default("")
+  currency        String   @default("AED")
+  items           Int      @default(0)
+  status          String   @default("DISPATCHED")
+  lineItems       Json     @default("[]")
+  notes           String   @default("")
+  shippingAddress String   @default("")
+  attnName        String   @default("")
+  attnEmail       String   @default("")
+  salesPerson     String   @default("")
+  poNumber        String   @default("")
+  project         String   @default("")
+  showSignature   Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("delivery_orders")
+}
+
+model Invoice {
+  id           String   @id @default(cuid())
+  number       String   @unique
+  customer     String
+  linkedQuote  String   @default("")
+  date         String   @default("")
+  due          String   @default("")
+  currency     String   @default("AED")
+  total        Float    @default(0)
+  paid         Float    @default(0)
+  status       String   @default("UNPAID")
+  progressPct  Int      @default(0)
+  projectTotal Float    @default(0)
+  billedToDate Float    @default(0)
+  items        Json     @default("[]")
+  notes        String   @default("")
+  attnName     String   @default("")
+  attnEmail    String   @default("")
+  salesPerson  String   @default("")
+  poNumber     String   @default("")
+  project      String   @default("")
+  showSignature Boolean  @default(true)
+  discount      Float    @default(0)
+  tax           Float    @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("invoices")
+}
+
+model Expense {
+  id         String   @id @default(cuid())
+  number     String   @unique
+  project    String   @default("")
+  supplier   String   @default("")
+  category   String
+  amount     Float    @default(0)
+  date       String   @default("")
+  notes      String   @default("")
+  attachment String   @default("")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("expenses")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  user      String   @default("")
+  module    String   @default("")
+  action    String   @default("")
+  target    String   @default("")
+  time      String   @default("")
+  ip        String   @default("")
+  createdAt DateTime @default(now())
+
+  @@map("audit_logs")
+}
+
+model Setting {
+  id                    String   @id @default(cuid())
+  type                  String   @unique @default("app_settings")
+  defaultCurrency       String   @default("AED")
+  defaultPaymentTerms   String   @default("Net 30")
+  taxRate               Float    @default(5)
+  quotationValidityDays Int      @default(30)
+  autoNumbering         Boolean  @default(true)
+  emailNotifications    Boolean  @default(true)
+  invoicePrefix         String   @default("AB-INV")
+  quotationPrefix       String   @default("AB-QT")
+  poPrefix              String   @default("AB-PO")
+  doPrefix              String   @default("AB-DO")
+  expensePrefix         String   @default("AB-EXP")
+  dateFormat            String   @default("YYYY-MM-DD")
+  timezone              String   @default("Asia/Dubai")
+  companyLogo           String   @default("")
+  smtpHost              String   @default("")
+  smtpPort              Int      @default(587)
+  smtpUser              String   @default("")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@map("settings")
+}
