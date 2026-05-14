@@ -21,7 +21,15 @@ export default function QuotationDetailPage() {
 
   if (!quotation) return <div className="flex items-center justify-center py-20 text-slate-500">Loading...</div>
 
-  const items: QuotationItem[] = quotation.items || []
+  const rawItems = typeof quotation.items === 'string' ? JSON.parse(quotation.items) : (quotation.items || [])
+  const items: QuotationItem[] = (Array.isArray(rawItems) ? rawItems : []).map((i: Record<string, unknown>) => ({
+    d: (i.d || i.description || '') as string,
+    q: Number(i.q ?? i.qty ?? 0),
+    u: (i.u || i.unit || '') as string,
+    r: Number(i.r ?? i.rate ?? 0),
+    t: Number(i.t ?? i.amount ?? 0),
+    components: (i.components || []) as string[],
+  }))
   const subtotal = items.reduce((s, i) => s + (Number(i.q) || 0) * (Number(i.r) || 0), 0)
   const discount = quotation.discount || 0
   const tax = quotation.tax || 0
