@@ -15,7 +15,13 @@ export default function DeliveryOrderDetailPage() {
 
   if (!dor) return <div className="flex items-center justify-center py-20 text-slate-500">Loading...</div>
 
-  const lineItems = (dor.lineItems || []) as Array<{ d: string; components?: string[]; q: number; u: string }>
+  const rawLineItems = typeof dor.lineItems === 'string' ? JSON.parse(dor.lineItems) : (dor.lineItems || [])
+  const lineItems = (Array.isArray(rawLineItems) ? rawLineItems : []).map((i: Record<string, unknown>) => ({
+    d: (i.d || i.description || '') as string,
+    q: Number(i.q ?? i.qty ?? 0),
+    u: (i.u || i.unit || '') as string,
+    components: (i.components || []) as string[],
+  }))
 
   return (
     <div>

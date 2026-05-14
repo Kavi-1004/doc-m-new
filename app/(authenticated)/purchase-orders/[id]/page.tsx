@@ -17,7 +17,14 @@ export default function PurchaseOrderDetailPage() {
 
   if (!po) return <div className="flex items-center justify-center py-20 text-slate-500">Loading...</div>
 
-  const items: PurchaseOrderItem[] = po.items || []
+  const rawItems = typeof po.items === 'string' ? JSON.parse(po.items) : (po.items || [])
+  const items: PurchaseOrderItem[] = (Array.isArray(rawItems) ? rawItems : []).map((i: Record<string, unknown>) => ({
+    d: (i.d || i.description || '') as string,
+    q: Number(i.q ?? i.qty ?? 0),
+    u: (i.u || i.unit || 'pcs') as string,
+    r: Number(i.r ?? i.rate ?? 0),
+    t: Number(i.t ?? i.amount ?? 0),
+  }))
   const total = items.reduce((s, i) => s + (Number(i.q) || 0) * (Number(i.r) || 0), 0)
 
   return (

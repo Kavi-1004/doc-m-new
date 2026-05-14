@@ -17,7 +17,13 @@ export default function InvoiceDetailPage() {
 
   if (!invoice) return <div className="flex items-center justify-center py-20 text-slate-500">Loading...</div>
 
-  const items: InvoiceItem[] = invoice.items || []
+  const rawItems = typeof invoice.items === 'string' ? JSON.parse(invoice.items) : (invoice.items || [])
+  const items: InvoiceItem[] = (Array.isArray(rawItems) ? rawItems : []).map((i: Record<string, unknown>) => ({
+    d: (i.d || i.description || '') as string,
+    q: Number(i.q ?? i.qty ?? 0),
+    r: Number(i.r ?? i.rate ?? 0),
+    t: Number(i.t ?? i.amount ?? 0),
+  }))
   const subtotal = items.reduce((s, i) => s + (Number(i.q) || 0) * (Number(i.r) || 0), 0)
   const balance = invoice.total - invoice.paid
 
