@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DocumentPreview } from '@/components/shared/DocumentPreview'
 import { QuotationSelector } from '@/components/shared/QuotationSelector'
+import { SupplierSelector } from '@/components/shared/SupplierSelector'
 import { apiMutate, useApi } from '@/hooks/use-api'
 import { useAppContext } from '@/lib/app-context'
 import type { PurchaseOrder, PurchaseOrderItem, Quotation } from '@/types'
@@ -141,7 +142,7 @@ export function PurchaseOrderForm({ editId }: PurchaseOrderFormProps) {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>Supplier *</Label>
-                  <Input value={supplier} onChange={e => setSupplier(e.target.value)} placeholder="Supplier name" />
+                  <SupplierSelector value={supplier} onChange={(val) => setSupplier(val)} placeholder="Select supplier..." />
                 </div>
                 <div>
                   <Label>Linked Quote</Label>

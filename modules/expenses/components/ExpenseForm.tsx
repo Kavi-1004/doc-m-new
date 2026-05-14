@@ -11,6 +11,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { FileUpload } from '@/components/shared/FileUpload'
+import { ProjectSelector } from '@/components/shared/ProjectSelector'
+import { SupplierSelector } from '@/components/shared/SupplierSelector'
 import { apiMutate, useApi } from '@/hooks/use-api'
 import { CAT_COLORS } from '@/lib/constants'
 import type { Expense } from '@/types'
@@ -100,11 +102,11 @@ export function ExpenseForm({ editId }: ExpenseFormProps) {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Project</Label>
-                <Input value={project} onChange={e => setProject(e.target.value)} placeholder="Linked project" />
+                <ProjectSelector value={project} onChange={setProject} placeholder="Select or search project..." />
               </div>
               <div>
                 <Label>Supplier</Label>
-                <Input value={supplier} onChange={e => setSupplier(e.target.value)} placeholder="Supplier name" />
+                <SupplierSelector value={supplier} onChange={(val) => setSupplier(val)} placeholder="Select supplier..." />
               </div>
             </div>
             <div>

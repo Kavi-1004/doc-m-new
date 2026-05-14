@@ -185,6 +185,7 @@ model Invoice {
   showSignature Boolean  @default(true)
   discount      Float    @default(0)
   tax           Float    @default(0)
+  payments      Json     @default("[]")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
