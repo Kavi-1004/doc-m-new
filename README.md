@@ -170,23 +170,23 @@ Download from [postgresql.org/download/windows](https://www.postgresql.org/downl
 
 ## ERP Modules
 
-| Module              | Description                                              | Create/Edit | Preview | PDF  |
-|---------------------|----------------------------------------------------------|:-----------:|:-------:|:----:|
-| **Dashboard**       | KPIs, charts, activity feed, business overview           |     —       |    —    |  —   |
-| **Companies**       | Multi-company management with logos and bank details     |     Yes     |    —    |  —   |
-| **Users & Roles**   | RBAC with 6 roles, per-company user assignment           |     —       |    —    |  —   |
-| **Customers**       | Customer master data, credit limits, payment terms       |     Yes     |    —    |  —   |
-| **Suppliers**       | Supplier registry with bank and tax details              |     Yes     |    —    |  —   |
-| **Quotations**      | Sales quotes with line items, revisions, currency select |     Yes     |   Yes   | Yes  |
-| **Supplier Quotes** | Supplier bid management with accept/reject               |     Yes     |   Yes   | Yes  |
-| **Purchase Orders** | PO lifecycle from draft to received                      |     Yes     |   Yes   | Yes  |
-| **Delivery Orders** | Outbound delivery tracking                               |     Yes     |   Yes   | Yes  |
-| **Invoices**        | Progressive billing, payment recording, aging            |     Yes     |   Yes   | Yes  |
-| **Expenses**        | Categorized expense tracking with file attachments       |     Yes     |    —    |  —   |
-| **Profitability**   | Project P&L, revenue vs expenses charts                  |     —       |    —    |  —   |
-| **Audit Logs**      | Complete audit trail of all system actions                |     —       |    —    |  —   |
-| **Reports**         | Sales, expense, aging, and supplier reports               |     —       |    —    |  —   |
-| **Settings**        | App configuration, prefixes, defaults                    |     —       |    —    |  —   |
+| Module              | Description                                              | Create/Edit | Preview | Export | Email |
+|---------------------|----------------------------------------------------------|:-----------:|:-------:|:------:|:-----:|
+| **Dashboard**       | KPIs, charts, activity feed, business overview           |     —       |    —    |   —    |   —   |
+| **Companies**       | Multi-company management with logos and bank details     |     Yes     |    —    |   —    |   —   |
+| **Users & Roles**   | RBAC with 6 roles, per-company user assignment           |     Yes     |    —    |   —    |   —   |
+| **Customers**       | Customer master data with single address field           |     Yes     |    —    |   —    |   —   |
+| **Suppliers**       | Supplier registry with bank and tax details              |     Yes     |    —    |   —    |   —   |
+| **Quotations**      | Sales quotes with line items, revisions, approve/reject  |     Yes     |   Yes   |  Yes   |  Yes  |
+| **Supplier Quotes** | Supplier bid management with supplier selector           |     Yes     |   Yes   |  Yes   |   —   |
+| **Purchase Orders** | PO lifecycle with quotation + supplier selectors         |     Yes     |   Yes   |  Yes   |   —   |
+| **Delivery Orders** | Outbound delivery tracking, generate invoice from DO     |     Yes     |   Yes   |  Yes   |   —   |
+| **Invoices**        | Progressive billing, payment history, aging              |     Yes     |   Yes   |  Yes   |  Yes  |
+| **Expenses**        | Categorized tracking with project + supplier selectors   |     Yes     |    —    |  Yes   |   —   |
+| **Profitability**   | Project P&L, revenue vs expenses charts                  |     —       |    —    |   —    |   —   |
+| **Audit Logs**      | Complete audit trail of all system actions                |     —       |    —    |   —    |   —   |
+| **Reports**         | Sales, expense, aging, and supplier reports               |     —       |    —    |   —    |   —   |
+| **Settings**        | Currency, tax, prefixes, SMTP, auto-numbering config     |     Yes     |    —    |   —    |   —   |
 
 ### Key Workflows
 
@@ -208,9 +208,24 @@ Download from [postgresql.org/download/windows](https://www.postgresql.org/downl
    - Upload receipts/documents to expenses
    - Files stored in `public/uploads/` (10MB limit)
 
-5. **PDF Export**
-   - Click the "PDF" button on any document preview
-   - Downloads an A4 PDF of the document with company header and formatting
+5. **PDF / HTML Export**
+   - Click "Export PDF" from the row actions menu on any document
+   - Opens a printable HTML page with company header, line items, and totals
+   - Use browser Print → Save as PDF for A4 PDF output
+
+6. **Email Documents**
+   - Click "Send Email" from quotation or invoice row actions
+   - Enter recipient email, name, subject, and optional message
+   - Requires SMTP configuration in Settings
+
+7. **Payment Recording**
+   - Open an existing invoice for editing
+   - Use the Payment History card to add individual payments (amount, method, reference)
+   - Paid total auto-recalculates from recorded payments
+
+8. **Approve / Reject Quotations**
+   - Open an existing quotation for editing
+   - Click Approve or Reject buttons to change quotation status
 
 ---
 
@@ -249,6 +264,8 @@ PUT  /api/settings               # Update settings
 POST /api/seed                   # Seed demo data
 POST /api/seed?reset=1           # Reset and re-seed
 POST /api/upload                 # Upload file (multipart/form-data)
+GET  /api/export/:type/:id       # Export document as printable HTML
+POST /api/email                  # Send document via email
 ```
 
 ### Report Types
@@ -293,16 +310,18 @@ Response envelope:
 | Delivery Order  | `PENDING`, `DISPATCHED`, `PARTIAL`, `DELIVERED`   |
 | Invoice         | `PAID`, `UNPAID`, `PARTIAL`, `OVERDUE`, `VOID`    |
 
-### User Roles
+### User Roles & RBAC
 
-| Role          | Access Level                                  |
-|---------------|-----------------------------------------------|
-| SUPER_ADMIN   | Full access to everything                     |
-| ADMIN         | Full access except system settings            |
-| SALES         | Quotations, customers, invoices               |
-| PROCUREMENT   | Purchase orders, suppliers, supplier quotes   |
-| ACCOUNTANT    | Invoices, expenses, reports                   |
-| VIEWER        | Read-only access to all modules               |
+Roles are enforced at both API middleware (403 on unauthorized requests) and UI level (sidebar items filtered by role).
+
+| Role          | Accessible Modules                                            |
+|---------------|---------------------------------------------------------------|
+| SUPER_ADMIN   | Full access to everything                                     |
+| ADMIN         | Full access to everything                                     |
+| SALES         | Dashboard, Quotations, Customers, Delivery Orders, Invoices   |
+| PROCUREMENT   | Dashboard, Suppliers, Purchase Orders, Supplier Quotes         |
+| ACCOUNTANT    | Dashboard, Invoices, Expenses, Reports, Profitability          |
+| VIEWER        | Read-only access to all modules (sidebar shows all items)     |
 
 ---
 
@@ -383,7 +402,9 @@ Response envelope:
 │   ├── layout/                     # LoginScreen, Sidebar, Topbar
 │   ├── shared/                     # DocumentPreview, FileUpload, FilterBar,
 │   │                               # KpiCard, PageHeader, Pagination,
-│   │                               # RowActions, StatusPill
+│   │                               # RowActions, StatusPill, CustomerSelector,
+│   │                               # SupplierSelector, QuotationSelector,
+│   │                               # ProjectSelector, SendEmailDialog
 │   └── ui/                         # ~40 shadcn/ui primitives
 │
 ├── hooks/                          # use-api, use-mobile, use-toast
@@ -513,20 +534,20 @@ npx prisma migrate reset    # Full database reset
 
 ## Database Tables
 
-| Table             | Key Fields                                    |
-|-------------------|-----------------------------------------------|
-| companies         | `code` (unique), name, currency, bank         |
-| users             | `email` (unique), name, role, company         |
-| customers         | `code` (unique), company, contact, credit     |
-| suppliers         | `code` (unique), company, contact, bank       |
-| quotations        | `number` (unique), customer, items, total     |
-| supplier_quotes   | `number` (unique), supplier, items, amount    |
-| purchase_orders   | `number` (unique), supplier, items, amount    |
-| delivery_orders   | `number` (unique), customer, lineItems        |
-| invoices          | `number` (unique), customer, total, paid      |
-| expenses          | `number` (unique), category, amount, attachment |
-| audit_logs        | user, module, action, target, time            |
-| settings          | `type` (unique)                               |
+| Table             | Key Fields                                          |
+|-------------------|-----------------------------------------------------|
+| companies         | `code` (unique), name, currency, bank               |
+| users             | `email` (unique), name, role, company, password     |
+| customers         | `code` (unique), company, contact, billing/shipping |
+| suppliers         | `code` (unique), company, contact, bank             |
+| quotations        | `number` (unique), customer, items, total, poDocument |
+| supplier_quotes   | `number` (unique), supplier, items, amount          |
+| purchase_orders   | `number` (unique), supplier, items, amount          |
+| delivery_orders   | `number` (unique), customer, lineItems              |
+| invoices          | `number` (unique), customer, total, paid, payments  |
+| expenses          | `number` (unique), category, amount, attachment     |
+| audit_logs        | user, module, action, target, time                  |
+| settings          | `type` (unique), prefixes, SMTP, tax config         |
 
 ---
 

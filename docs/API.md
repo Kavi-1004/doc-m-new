@@ -395,16 +395,24 @@ Returns app settings (creates defaults if none exist).
 
 Update app settings. Available fields:
 
-| Field                   | Type    | Default        |
-|-------------------------|---------|----------------|
-| `defaultCurrency`       | string  | AED            |
-| `defaultPaymentTerms`   | string  | Net 30         |
-| `taxRate`               | number  | 5              |
-| `quotationValidityDays` | number  | 30             |
-| `autoNumbering`         | boolean | true           |
-| `emailNotifications`    | boolean | true           |
-| `dateFormat`            | string  | YYYY-MM-DD     |
-| `timezone`              | string  | Asia/Dubai     |
+| Field                   | Type    | Default        | Description                    |
+|-------------------------|---------|----------------|--------------------------------|
+| `defaultCurrency`       | string  | AED            | Default currency for documents |
+| `defaultPaymentTerms`   | string  | Net 30         | Default payment terms          |
+| `taxRate`               | number  | 5              | Default tax percentage         |
+| `quotationValidityDays` | number  | 30             | Quotation validity in days     |
+| `autoNumbering`         | boolean | true           | Auto-generate document numbers |
+| `emailNotifications`    | boolean | true           | Enable email notifications     |
+| `dateFormat`            | string  | YYYY-MM-DD     | Date display format            |
+| `timezone`              | string  | Asia/Dubai     | Application timezone           |
+| `invoicePrefix`         | string  | AB-INV         | Invoice number prefix          |
+| `quotationPrefix`       | string  | AB-QT          | Quotation number prefix        |
+| `poPrefix`              | string  | AB-PO          | Purchase order number prefix   |
+| `doPrefix`              | string  | AB-DO          | Delivery order number prefix   |
+| `expensePrefix`         | string  | AB-EXP         | Expense number prefix          |
+| `smtpHost`              | string  | (empty)        | SMTP server hostname           |
+| `smtpPort`              | number  | 587            | SMTP server port               |
+| `smtpUser`              | string  | (empty)        | SMTP authentication username   |
 
 ---
 
@@ -417,6 +425,68 @@ Seeds the database with demo data. Idempotent — skips collections that already
 #### `POST /api/seed?reset=1`
 
 Drops all collections and re-seeds with fresh demo data.
+
+---
+
+### Document Export
+
+#### `GET /api/export/:type/:id`
+
+Returns a printable HTML document. Open in browser and use Print → Save as PDF.
+
+**Supported Types:** `quotation`, `invoice`, `purchase-order`, `delivery-order`, `expense`, `supplier-quote`
+
+**Response:** HTML page with company header, line items table, totals, and a "Print / Save as PDF" button.
+
+**Example:**
+```
+GET /api/export/quotation/clxyz123abc
+GET /api/export/invoice/clxyz456def
+```
+
+---
+
+### Email
+
+#### `POST /api/email`
+
+Send a document to a recipient via email.
+
+**Request Body:**
+```json
+{
+  "type": "quotation",
+  "id": "clxyz123abc",
+  "recipientEmail": "client@example.com",
+  "recipientName": "John Smith",
+  "subject": "Your Quotation from Al Bashir Trading",
+  "message": "Please find your quotation attached.",
+  "_user": "Ahmed Al Bashir"
+}
+```
+
+**Required Fields:** `type`, `id`, `recipientEmail`
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Email queued to client@example.com",
+  "details": {
+    "to": "client@example.com",
+    "toName": "John Smith",
+    "subject": "Quotation from Al Bashir Trading LLC",
+    "exportUrl": "/api/export/quotation/clxyz123abc",
+    "smtpConfigured": true
+  }
+}
+```
+
+**Errors:**
+- `400` — Missing type/id/recipientEmail, or SMTP not configured
+- `500` — Server error
+
+**Note:** Requires SMTP configuration in Settings. Creates an audit log entry for each send.
 
 ---
 
