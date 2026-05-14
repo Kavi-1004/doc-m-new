@@ -71,7 +71,9 @@ NexusERP/
 │
 ├── components/                   # Global reusable UI
 │   ├── layout/                   # LoginScreen, Sidebar, Topbar
-│   ├── shared/                   # FilterBar, KpiCard, PageHeader, RowActions, StatusPill
+│   ├── shared/                   # FilterBar, KpiCard, PageHeader, RowActions,
+│   │                             # StatusPill, CustomerSelector, SupplierSelector,
+│   │                             # QuotationSelector, ProjectSelector, SendEmailDialog
 │   └── ui/                       # ~40 shadcn/ui primitives
 │
 ├── hooks/                        # Global reusable hooks
@@ -166,7 +168,7 @@ NexusERP/
 | **Type definitions** | Done | Domain-specific type files with barrel re-export |
 | **Auth system** | Done | JWT-based with cookie + bearer token support |
 | **Middleware** | Done | API route protection with JWT verification |
-| **Role-based permissions** | Done | Permission matrix for 6 roles across all modules |
+| **Role-based permissions** | Done | Permission matrix enforced at API + UI level |
 | **Global UI components** | Done | shadcn/ui + 5 shared components + RowActions with custom actions |
 | **CI/CD workflows** | Done | GitHub Actions for lint, test, deploy |
 | **Documentation** | Done | API, Architecture, Changelog, Deployment, Setup docs |
@@ -195,6 +197,25 @@ NexusERP/
 | **Module-level services** | Scaffolded | Directories created, API call logic to be extracted |
 | **Module-level validations** | Scaffolded | Directories created, to mirror lib/validations/ per module |
 
+### Recently Completed
+
+| Feature / Area | Status | Notes |
+|---|---|---|
+| **RBAC enforcement** | Done | Permission matrix in `lib/rbac.ts`, middleware returns 403 |
+| **Role-based sidebar** | Done | Nav items filtered by user role |
+| **Duplicate handlers** | Done | `onDuplicate` wired for all 8 modules |
+| **Generate DO from PO** | Done | Row action on PO list |
+| **Generate Invoice from DO** | Done | Row action on DO list |
+| **Quotation selector in PO** | Done | Auto-populates items from selected quotation |
+| **Supplier selector** | Done | Integrated into PO and Supplier Quote forms |
+| **Project selector** | Done | Integrated into Expense form |
+| **Upload PO for quotation** | Done | FileUpload field on quotation form |
+| **App Settings page** | Done | Currency, tax, prefixes, SMTP config |
+| **Payment recording** | Done | Add/delete payments on invoices |
+| **Approve/Reject quotations** | Done | Status workflow buttons |
+| **PDF/HTML export** | Done | `/api/export/[type]/[id]` + row actions |
+| **Email sending** | Done | `/api/email` + SendEmailDialog component |
+
 ### Pending
 
 | Feature / Area | Status | Notes |
@@ -206,13 +227,9 @@ NexusERP/
 | **lib/repositories/** | Not started | Extract Prisma queries from API routes |
 | **Error boundary** | Not started | Global error handling for pages |
 | **Loading states** | Not started | Skeleton loading for each route |
-| **Search functionality** | Not started | Global search across modules |
-| **Email notifications** | Not started | SMTP-based notifications |
 | **Dark mode** | Not started | Theme switching support |
 | **i18n** | Not started | Multi-language support |
-| **Audit log integration** | Partial | Logging in API routes; no UI filters |
-| **Data export (CSV/Excel)** | Not started | Export button exists but not wired |
-| **Dashboard date filtering** | Not started | Date range selector for KPIs |
+| **Data export (CSV/Excel)** | Not started | Export to CSV/Excel from list views |
 
 ---
 

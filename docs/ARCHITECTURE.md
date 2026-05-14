@@ -37,6 +37,8 @@ NexusERP is a full-stack ERP application built with **Next.js 14** (App Router),
 │   │   ├── dashboard/          # GET /api/dashboard (aggregated KPIs)
 │   │   ├── reports/            # GET /api/reports (date-filtered)
 │   │   ├── settings/           # GET/PUT /api/settings
+│   │   ├── export/[type]/[id]/ # GET — printable HTML export
+│   │   ├── email/              # POST — send document via email
 │   │   └── seed/               # POST /api/seed (demo data)
 │   ├── layout.tsx              # Root layout with Toaster
 │   └── page.tsx                # Main SPA entry point
@@ -45,8 +47,13 @@ NexusERP is a full-stack ERP application built with **Next.js 14** (App Router),
 │   │   ├── FilterBar.tsx       # Search bar with API-connected filtering
 │   │   ├── KpiCard.tsx         # Dashboard KPI card
 │   │   ├── PageHeader.tsx      # Page title component
-│   │   ├── RowActions.tsx      # Dropdown actions (View/Edit/Delete)
-│   │   └── StatusPill.tsx      # Status badge component
+│   │   ├── RowActions.tsx      # Dropdown actions (View/Edit/Delete/Duplicate)
+│   │   ├── StatusPill.tsx      # Status badge component
+│   │   ├── CustomerSelector.tsx    # Searchable customer dropdown
+│   │   ├── SupplierSelector.tsx    # Searchable supplier dropdown
+│   │   ├── QuotationSelector.tsx   # Searchable quotation dropdown
+│   │   ├── ProjectSelector.tsx     # Project selector from quotations
+│   │   └── SendEmailDialog.tsx     # Email composition dialog
 │   ├── ui/                     # shadcn/ui primitives
 │   └── views/                  # Page-level view components
 │       ├── DashboardView.tsx   # Main dashboard with charts
@@ -123,16 +130,21 @@ The `generateDocNumber()` function in `lib/api-helpers.ts` queries the latest do
 
 ## RBAC (Role-Based Access Control)
 
-Six roles are defined:
+Six roles are defined and **enforced** at both API middleware and UI levels:
 
-| Role          | Description                           |
-|---------------|---------------------------------------|
-| SUPER_ADMIN   | Full system access                    |
-| ADMIN         | Company-level administration          |
-| SALES         | Quotations, customers, invoices       |
-| PROCUREMENT   | Supplier quotes, purchase orders      |
-| ACCOUNTANT    | Invoices, expenses, reports           |
-| VIEWER        | Read-only access                      |
+| Role          | API Access                                                   | Sidebar Visibility |
+|---------------|--------------------------------------------------------------|-------------------|
+| SUPER_ADMIN   | Full access to all endpoints                                 | All modules       |
+| ADMIN         | Full access to all endpoints                                 | All modules       |
+| SALES         | Quotations, Customers, Delivery Orders, Invoices             | Sales modules     |
+| PROCUREMENT   | Suppliers, Purchase Orders, Supplier Quotes                  | Procurement modules |
+| ACCOUNTANT    | Invoices, Expenses, Reports, Profitability                   | Finance modules   |
+| VIEWER        | Read-only (GET only) on all endpoints                        | All modules       |
+
+**Enforcement:**
+- `lib/rbac.ts` — Permission matrix mapping roles to allowed modules and actions
+- `middleware.ts` — Checks JWT role claim against RBAC permissions; returns 403 for unauthorized requests
+- `components/layout/Sidebar.tsx` — Filters nav items based on user role
 
 ## Key Design Decisions
 
