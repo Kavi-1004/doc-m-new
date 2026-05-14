@@ -1,12 +1,10 @@
 'use client'
 
 import {
-  Search, Bell, ChevronDown, Building, Menu, Settings, LogOut,
+  Search, Bell, Building, Menu, Settings, LogOut,
 } from 'lucide-react'
-import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -17,15 +15,15 @@ import type { Company } from '@/types'
 interface TopbarProps {
   onMenu: () => void
   activeCompany: Company
-  setActiveCompany: (c: Company) => void
-  companies: Company[]
+  setActiveCompany?: (c: Company) => void
+  companies?: Company[]
   onLogout: () => void
   userName: string
   userRole: string
 }
 
 export function Topbar({
-  onMenu, activeCompany, setActiveCompany, companies,
+  onMenu, activeCompany,
   onLogout, userName, userRole,
 }: TopbarProps) {
   const userInitials = userName.split(' ').map(x => x[0]).slice(0, 2).join('').toUpperCase()
@@ -43,30 +41,12 @@ export function Topbar({
           </div>
         </div>
         <div className="flex-1" />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="hidden sm:inline-flex gap-2">
-              <Building className="h-4 w-4" /> {activeCompany.code} — {activeCompany.name.split(' ').slice(0, 2).join(' ')}
-              <ChevronDown className="h-4 w-4 opacity-60" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-72">
-            <DropdownMenuLabel>Switch company</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {companies.map(c => (
-              <DropdownMenuItem key={c.id || c.code} onClick={() => { setActiveCompany(c); toast.success(`Switched to ${c.name}`) }}>
-                <div className="flex items-center gap-3 w-full">
-                  <div className="w-8 h-8 rounded bg-slate-900 text-white text-xs flex items-center justify-center font-semibold">{c.logo}</div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium truncate">{c.name}</div>
-                    <div className="text-xs text-slate-500">{c.code} · {c.currency}</div>
-                  </div>
-                  {!c.active && <Badge variant="outline" className="text-[10px]">inactive</Badge>}
-                </div>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="hidden sm:flex items-center gap-2 text-sm text-slate-600 border rounded-md px-3 py-1.5">
+          <Building className="h-4 w-4" />
+          <span className="font-medium">{activeCompany.code}</span>
+          <span className="text-slate-400">—</span>
+          <span>{activeCompany.name.split(' ').slice(0, 2).join(' ')}</span>
+        </div>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
           <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500" />

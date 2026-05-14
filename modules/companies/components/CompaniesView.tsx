@@ -52,7 +52,10 @@ export function CompaniesView() {
                 <TableCell><div className="text-sm">{c.email}</div><div className="text-xs text-slate-500">{c.phone}</div></TableCell>
                 <TableCell><StatusPill s={c.active ? 'Active' : 'Inactive'} /></TableCell>
                 <TableCell>
-                  <RowActions onEdit={() => router.push(`/companies/${c.id || c._id}/edit`)} />
+                  <RowActions
+                    onView={() => router.push(`/companies/${c.id || c._id}`)}
+                    onEdit={() => router.push(`/companies/${c.id || c._id}/edit`)}
+                  />
                 </TableCell>
               </TableRow>
             ))}

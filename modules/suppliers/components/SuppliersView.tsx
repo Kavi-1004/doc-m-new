@@ -61,6 +61,7 @@ export function SuppliersView() {
                 <TableCell className="text-xs text-slate-600 font-mono">{s.bank}</TableCell>
                 <TableCell>
                   <RowActions
+                    onView={() => router.push(`/suppliers/${s.id || s._id}`)}
                     onEdit={() => router.push(`/suppliers/${s.id || s._id}/edit`)}
                     onDelete={() => handleDelete(s.id || s._id || '')}
                   />

@@ -9,11 +9,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { apiMutate, useApi } from '@/hooks/use-api'
 import type { Customer } from '@/types'
-
-const PAYMENT_TERMS = ['Net 15', 'Net 30', 'Net 45', 'Net 60', 'Net 90', 'Due on Receipt', 'COD']
 
 interface CustomerFormProps {
   editId?: string
@@ -28,10 +25,7 @@ export function CustomerForm({ editId }: CustomerFormProps) {
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [tax, setTax] = useState('')
-  const [terms, setTerms] = useState('Net 30')
-  const [credit, setCredit] = useState(0)
-  const [billing, setBilling] = useState('')
-  const [shipping, setShipping] = useState('')
+  const [address, setAddress] = useState('')
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
 
@@ -42,10 +36,7 @@ export function CustomerForm({ editId }: CustomerFormProps) {
       setEmail(existing.email)
       setPhone(existing.phone)
       setTax(existing.tax)
-      setTerms(existing.terms)
-      setCredit(existing.credit)
-      setBilling(existing.billing)
-      setShipping(existing.shipping)
+      setAddress(existing.billing || existing.shipping || '')
       setNotes(existing.notes)
     }
   }, [existing])
@@ -56,7 +47,7 @@ export function CustomerForm({ editId }: CustomerFormProps) {
 
     setSaving(true)
     try {
-      const payload = { company, contact, email, phone, tax, terms, credit, billing, shipping, notes, _user: 'System' }
+      const payload = { company, contact, email, phone, tax, billing: address, shipping: address, notes, _user: 'System' }
       if (editId) {
         await apiMutate(`/api/customers/${editId}`, 'PUT', payload)
         toast.success('Customer updated')
@@ -116,36 +107,11 @@ export function CustomerForm({ editId }: CustomerFormProps) {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle className="text-base">Terms & Credit</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Payment Terms</Label>
-                <Select value={terms} onValueChange={setTerms}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {PAYMENT_TERMS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Credit Limit</Label>
-                <Input type="number" min={0} value={credit} onChange={e => setCredit(Number(e.target.value))} />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader><CardTitle className="text-base">Addresses</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
+          <CardHeader><CardTitle className="text-base">Address</CardTitle></CardHeader>
+          <CardContent>
             <div>
-              <Label>Billing Address</Label>
-              <Input value={billing} onChange={e => setBilling(e.target.value)} placeholder="Billing address" />
-            </div>
-            <div>
-              <Label>Shipping Address</Label>
-              <Input value={shipping} onChange={e => setShipping(e.target.value)} placeholder="Shipping address" />
+              <Label>Address</Label>
+              <Input value={address} onChange={e => setAddress(e.target.value)} placeholder="Customer address" />
             </div>
           </CardContent>
         </Card>

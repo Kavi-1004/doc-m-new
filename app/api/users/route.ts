@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import prisma from '@/lib/prisma'
 import { jsonResponse, errorResponse, parseBody, parsePagination, buildSearchFilter, createAuditLog } from '@/lib/api-helpers'
 import { userSchema, validateBody } from '@/lib/validations'
+import { hashPassword } from '@/lib/auth'
 
 const VALID_ROLES = ['SUPER_ADMIN', 'ADMIN', 'SALES', 'PROCUREMENT', 'ACCOUNTANT', 'VIEWER']
 
@@ -41,6 +42,7 @@ export async function POST(request: NextRequest) {
     const user = await prisma.user.create({
       data: {
         name: data.name, email: data.email, role: data.role,
+        password: data.password ? hashPassword(data.password) : undefined,
         company: data.company, status: data.status || 'Active', lastLogin: '',
       },
     })

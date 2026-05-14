@@ -6,14 +6,12 @@ import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useApi, apiMutate } from '@/hooks/use-api'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { FilterBar } from '@/components/shared/FilterBar'
 import { RowActions } from '@/components/shared/RowActions'
 import { Pagination } from '@/components/shared/Pagination'
-import { fmtMoney } from '@/lib/utils'
 import type { Customer } from '@/types'
 
 interface CustomersResponse {
@@ -50,18 +48,18 @@ export function CustomersView() {
         <Table>
           <TableHeader><TableRow>
             <TableHead>Code</TableHead><TableHead>Customer</TableHead><TableHead>Contact</TableHead>
-            <TableHead>Terms</TableHead><TableHead className="text-right">Credit Limit</TableHead><TableHead className="w-10" />
+            <TableHead>Phone</TableHead><TableHead className="w-10" />
           </TableRow></TableHeader>
           <TableBody>
             {customers.map(c => (
               <TableRow key={c._id || c.id}>
                 <TableCell className="font-mono text-xs">{c.code}</TableCell>
-                <TableCell><div className="font-medium">{c.company}</div><div className="text-xs text-slate-500">{c.billing}</div></TableCell>
+                <TableCell><div className="font-medium">{c.company}</div><div className="text-xs text-slate-500">{c.billing || c.shipping}</div></TableCell>
                 <TableCell><div>{c.contact}</div><div className="text-xs text-slate-500">{c.email}</div></TableCell>
-                <TableCell><Badge variant="secondary">{c.terms}</Badge></TableCell>
-                <TableCell className="text-right font-medium">{fmtMoney(c.credit)}</TableCell>
+                <TableCell className="text-sm">{c.phone}</TableCell>
                 <TableCell>
                   <RowActions
+                    onView={() => router.push(`/customers/${c.id || c._id}`)}
                     onEdit={() => router.push(`/customers/${c.id || c._id}/edit`)}
                     onDelete={() => handleDelete(c.id || c._id || '')}
                   />

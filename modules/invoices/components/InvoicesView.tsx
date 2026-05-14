@@ -66,6 +66,7 @@ export function InvoicesView() {
                 <TableCell><StatusPill s={i.status} /></TableCell>
                 <TableCell>
                   <RowActions
+                    onView={() => router.push(`/invoices/${i.id || i._id}`)}
                     onEdit={() => router.push(`/invoices/${i.id || i._id}/edit`)}
                     onDelete={() => handleDelete(i.id || i._id || '')}
                   />
