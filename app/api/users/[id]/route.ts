@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import prisma from '@/lib/prisma'
 import { jsonResponse, errorResponse, parseBody, createAuditLog } from '@/lib/api-helpers'
+import { hashPassword } from '@/lib/auth'
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -17,7 +18,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   if (!body) return errorResponse('Invalid JSON body', 400)
 
   try {
-    const { _user, ...data } = body
+    const { _user, password, ...data } = body
+    if (password) data.password = hashPassword(password)
     const user = await prisma.user.update({ where: { id: params.id }, data })
     await createAuditLog({ user: _user || 'System', module: 'User', action: 'UPDATED', target: user.email })
     return jsonResponse(user)

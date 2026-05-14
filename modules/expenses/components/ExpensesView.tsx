@@ -78,6 +78,7 @@ export function ExpensesView() {
                 </TableCell>
                 <TableCell>
                   <RowActions
+                    onView={() => router.push(`/expenses/${e.id || e._id}`)}
                     onEdit={() => router.push(`/expenses/${e.id || e._id}/edit`)}
                     onDelete={() => handleDelete(e.id || e._id || '')}
                   />

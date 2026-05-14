@@ -64,6 +64,7 @@ export function PurchaseOrdersView() {
                 <TableCell><StatusPill s={p.status} /></TableCell>
                 <TableCell>
                   <RowActions
+                    onView={() => router.push(`/purchase-orders/${p.id || p._id}`)}
                     onEdit={() => router.push(`/purchase-orders/${p.id || p._id}/edit`)}
                     onDelete={() => handleDelete(p.id || p._id || '')}
                   />

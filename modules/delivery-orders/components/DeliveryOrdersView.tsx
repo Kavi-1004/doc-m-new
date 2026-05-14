@@ -63,6 +63,7 @@ export function DeliveryOrdersView() {
                 <TableCell><StatusPill s={d.status} /></TableCell>
                 <TableCell>
                   <RowActions
+                    onView={() => router.push(`/delivery-orders/${d.id || d._id}`)}
                     onEdit={() => router.push(`/delivery-orders/${d.id || d._id}/edit`)}
                     onDelete={() => handleDelete(d.id || d._id || '')}
                   />

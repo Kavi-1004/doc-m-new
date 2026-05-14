@@ -94,6 +94,7 @@ export function QuotationsView() {
                 <TableCell><StatusPill s={q.status} /></TableCell>
                 <TableCell>
                   <RowActions
+                    onView={() => router.push(`/quotations/${q.id || q._id}`)}
                     onEdit={() => router.push(`/quotations/${q.id || q._id}/edit`)}
                     onDelete={() => handleDelete(q.id || q._id || '')}
                     extraActions={[

@@ -65,6 +65,7 @@ export function SupplierQuotesView() {
                 <TableCell className="text-xs text-slate-500 max-w-[180px] truncate"><Paperclip className="h-3 w-3 inline mr-1" />{s.notes || '—'}</TableCell>
                 <TableCell>
                   <RowActions
+                    onView={() => router.push(`/supplier-quotes/${s.id || s._id}`)}
                     onEdit={() => router.push(`/supplier-quotes/${s.id || s._id}/edit`)}
                     onDelete={() => handleDelete(s.id || s._id || '')}
                   />
