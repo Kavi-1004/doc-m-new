@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Receipt } from 'lucide-react'
+import { Plus, Receipt, Download } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -107,6 +107,11 @@ export function DeliveryOrdersView() {
                         label: 'Generate Invoice',
                         icon: <Receipt className="h-4 w-4 mr-2" />,
                         onClick: () => handleGenerateInvoice(d.id || d._id || ''),
+                      },
+                      {
+                        label: 'Export PDF',
+                        icon: <Download className="h-4 w-4 mr-2" />,
+                        onClick: () => window.open(`/api/export/delivery-order/${d.id || d._id}`, '_blank'),
                       },
                     ]}
                   />

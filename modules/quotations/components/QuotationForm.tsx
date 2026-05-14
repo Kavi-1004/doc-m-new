@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Trash2, ArrowLeft, RotateCcw, FileText, Truck, Receipt, ListPlus } from 'lucide-react'
+import { Plus, Trash2, ArrowLeft, RotateCcw, FileText, Truck, Receipt, ListPlus, CheckCircle, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -49,6 +49,7 @@ export function QuotationForm({ editId }: QuotationFormProps) {
   const [invoicePct, setInvoicePct] = useState(100)
   const [showInvoiceDialog, setShowInvoiceDialog] = useState(false)
   const [poDocument, setPoDocument] = useState('')
+  const [status, setStatus] = useState('DRAFT')
 
   const [customerAddress, setCustomerAddress] = useState('')
 
@@ -67,6 +68,7 @@ export function QuotationForm({ editId }: QuotationFormProps) {
       setDiscount(existing.discount || 0)
       setTax(existing.tax || 0)
       setPoDocument(existing.poDocument || '')
+      setStatus(existing.status || 'DRAFT')
       if (existing.items && existing.items.length > 0) {
         setItems(existing.items.map(it => ({ ...it, components: it.components || [] })))
       }
@@ -402,6 +404,26 @@ export function QuotationForm({ editId }: QuotationFormProps) {
                 }}
               >
                 <RotateCcw className="h-4 w-4" /> Revise
+              </Button>
+            )}
+            {editId && status !== 'APPROVED' && (
+              <Button
+                variant="outline"
+                className="gap-2 border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                disabled={saving}
+                onClick={() => handleSave('APPROVED')}
+              >
+                <CheckCircle className="h-4 w-4" /> Approve
+              </Button>
+            )}
+            {editId && status !== 'REJECTED' && (
+              <Button
+                variant="outline"
+                className="gap-2 border-rose-300 text-rose-700 hover:bg-rose-50"
+                disabled={saving}
+                onClick={() => handleSave('REJECTED')}
+              >
+                <XCircle className="h-4 w-4" /> Reject
               </Button>
             )}
             <Button variant="ghost" onClick={() => router.push('/quotations')}>Cancel</Button>

@@ -79,6 +79,7 @@ export interface Invoice {
   showSignature?: boolean
   discount?: number
   tax?: number
+  payments?: Array<{ date: string; amount: number; method: string; reference: string }>
 }
 
 export interface Expense {

@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Paperclip } from 'lucide-react'
+import { Plus, Paperclip, Download } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -100,6 +100,11 @@ export function ExpensesView() {
                     onEdit={() => router.push(`/expenses/${e.id || e._id}/edit`)}
                     onDuplicate={() => handleDuplicate(e.id || e._id || '')}
                     onDelete={() => handleDelete(e.id || e._id || '')}
+                    extraActions={[{
+                      label: 'Export PDF',
+                      icon: <Download className="h-4 w-4 mr-2" />,
+                      onClick: () => window.open(`/api/export/expense/${e.id || e._id}`, '_blank'),
+                    }]}
                   />
                 </TableCell>
               </TableRow>

@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { DocumentPreview } from '@/components/shared/DocumentPreview'
+import { SupplierSelector } from '@/components/shared/SupplierSelector'
 import { apiMutate, useApi } from '@/hooks/use-api'
 import { useAppContext } from '@/lib/app-context'
 import type { SupplierQuote, SupplierQuoteItem } from '@/types'
@@ -141,7 +142,7 @@ export function SupplierQuoteForm({ editId }: SupplierQuoteFormProps) {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>Supplier *</Label>
-                  <Input value={supplier} onChange={e => setSupplier(e.target.value)} placeholder="Supplier name" />
+                  <SupplierSelector value={supplier} onChange={(val) => setSupplier(val)} placeholder="Select supplier..." />
                 </div>
                 <div>
                   <Label>Linked Quotation</Label>

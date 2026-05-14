@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, PackageCheck } from 'lucide-react'
+import { Plus, PackageCheck, Download } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -105,6 +105,11 @@ export function PurchaseOrdersView() {
                         label: 'Generate DO',
                         icon: <PackageCheck className="h-4 w-4 mr-2" />,
                         onClick: () => handleGenerateDO(p.id || p._id || ''),
+                      },
+                      {
+                        label: 'Export PDF',
+                        icon: <Download className="h-4 w-4 mr-2" />,
+                        onClick: () => window.open(`/api/export/purchase-order/${p.id || p._id}`, '_blank'),
                       },
                     ]}
                   />
