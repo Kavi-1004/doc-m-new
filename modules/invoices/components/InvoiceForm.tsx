@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Trash2, ArrowLeft, ListPlus, X } from 'lucide-react'
+import { Plus, Trash2, ArrowLeft, ListPlus, X, CreditCard } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -44,6 +44,10 @@ export function InvoiceForm({ editId }: InvoiceFormProps) {
   const [discount, setDiscount] = useState(0)
   const [tax, setTax] = useState(0)
   const [saving, setSaving] = useState(false)
+  const [payments, setPayments] = useState<Array<{ date: string; amount: number; method: string; reference: string }>>([])
+  const [newPaymentAmount, setNewPaymentAmount] = useState(0)
+  const [newPaymentMethod, setNewPaymentMethod] = useState('Bank Transfer')
+  const [newPaymentRef, setNewPaymentRef] = useState('')
 
   const [customerAddress, setCustomerAddress] = useState('')
 
@@ -63,6 +67,9 @@ export function InvoiceForm({ editId }: InvoiceFormProps) {
       setShowSignature(existing.showSignature ?? true)
       setDiscount(existing.discount || 0)
       setTax(existing.tax || 0)
+      if (existing.payments && Array.isArray(existing.payments)) {
+        setPayments(existing.payments)
+      }
       if (existing.items && existing.items.length > 0) {
         setItems(existing.items.map(it => ({ ...it, components: it.components || [] })))
       }
@@ -130,7 +137,7 @@ export function InvoiceForm({ editId }: InvoiceFormProps) {
       const payload = {
         customer, attnName, attnEmail, salesPerson, poNumber, project,
         linkedQuote, date, due, paid, notes, showSignature,
-        discount, tax,
+        discount, tax, payments,
         total,
         companyCode: company.code,
         items: items.map(i => ({ ...i, q: Number(i.q), r: Number(i.r), t: Number(i.q) * Number(i.r) })),
@@ -350,6 +357,56 @@ export function InvoiceForm({ editId }: InvoiceFormProps) {
               </div>
             </CardContent>
           </Card>
+
+          {editId && (
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle className="text-base">Payment History</CardTitle>
+                  <CreditCard className="h-4 w-4 text-slate-400" />
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {payments.length > 0 && (
+                  <div className="space-y-2">
+                    {payments.map((p, i) => (
+                      <div key={i} className="flex items-center justify-between border rounded-md p-2 bg-slate-50">
+                        <div>
+                          <div className="text-sm font-medium">{p.method}</div>
+                          <div className="text-xs text-slate-500">{p.date} {p.reference && `· ${p.reference}`}</div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-semibold text-emerald-600">{cur} {p.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                          <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-300 hover:text-rose-500" onClick={() => {
+                            const updated = payments.filter((_, idx) => idx !== i)
+                            setPayments(updated)
+                            setPaid(updated.reduce((s, pp) => s + pp.amount, 0))
+                          }}><X className="h-3 w-3" /></Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="border-t pt-3 space-y-2">
+                  <Label className="text-xs font-semibold text-slate-600">Record New Payment</Label>
+                  <div className="grid grid-cols-4 gap-2">
+                    <Input type="number" placeholder="Amount" value={newPaymentAmount || ''} onChange={e => setNewPaymentAmount(Number(e.target.value))} className="text-sm" />
+                    <Input value={newPaymentMethod} onChange={e => setNewPaymentMethod(e.target.value)} placeholder="Method" className="text-sm" />
+                    <Input value={newPaymentRef} onChange={e => setNewPaymentRef(e.target.value)} placeholder="Reference" className="text-sm" />
+                    <Button variant="outline" size="sm" onClick={() => {
+                      if (!newPaymentAmount || newPaymentAmount <= 0) { toast.error('Enter a valid amount'); return }
+                      const entry = { date: new Date().toISOString().slice(0, 10), amount: newPaymentAmount, method: newPaymentMethod, reference: newPaymentRef }
+                      const updated = [...payments, entry]
+                      setPayments(updated)
+                      setPaid(updated.reduce((s, p) => s + p.amount, 0))
+                      setNewPaymentAmount(0)
+                      setNewPaymentRef('')
+                    }}>Add</Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           <Card>
             <CardHeader><CardTitle className="text-base">Notes</CardTitle></CardHeader>

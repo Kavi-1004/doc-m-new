@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus } from 'lucide-react'
+import { Plus, Download, Mail } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -15,6 +15,7 @@ import { RowActions } from '@/components/shared/RowActions'
 import { StatusPill } from '@/components/shared/StatusPill'
 import { Pagination } from '@/components/shared/Pagination'
 import { fmtMoney } from '@/lib/utils'
+import { SendEmailDialog } from '@/components/shared/SendEmailDialog'
 import type { Invoice } from '@/types'
 
 interface InvoicesResponse {
@@ -26,6 +27,8 @@ export function InvoicesView() {
   const router = useRouter()
   const { company } = useAppContext()
   const [search, setSearch] = useState('')
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false)
+  const [emailTarget, setEmailTarget] = useState<{ id: string; customer: string } | null>(null)
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(20)
   const params = new URLSearchParams({ page: String(page), limit: String(limit) })
@@ -94,6 +97,18 @@ export function InvoicesView() {
                     onEdit={() => router.push(`/invoices/${i.id || i._id}/edit`)}
                     onDuplicate={() => handleDuplicate(i.id || i._id || '')}
                     onDelete={() => handleDelete(i.id || i._id || '')}
+                    extraActions={[
+                      {
+                        label: 'Export PDF',
+                        icon: <Download className="h-4 w-4 mr-2" />,
+                        onClick: () => window.open(`/api/export/invoice/${i.id || i._id}`, '_blank'),
+                      },
+                      {
+                        label: 'Send Email',
+                        icon: <Mail className="h-4 w-4 mr-2" />,
+                        onClick: () => { setEmailTarget({ id: i.id || i._id || '', customer: i.customer }); setEmailDialogOpen(true) },
+                      },
+                    ]}
                   />
                 </TableCell>
               </TableRow>
@@ -103,6 +118,14 @@ export function InvoicesView() {
       </CardContent>
         {data && <Pagination page={data.page} pages={data.pages} total={data.total} limit={data.limit} onPageChange={setPage} onLimitChange={v => { setLimit(v); setPage(1) }} />}
       </Card>
+      {emailTarget && (
+        <SendEmailDialog
+          open={emailDialogOpen}
+          onOpenChange={setEmailDialogOpen}
+          documentType="invoice"
+          documentId={emailTarget.id}
+        />
+      )}
     </div>
   )
 }

@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Paperclip } from 'lucide-react'
+import { Plus, Paperclip, Download } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -86,6 +86,11 @@ export function SupplierQuotesView() {
                     onEdit={() => router.push(`/supplier-quotes/${s.id || s._id}/edit`)}
                     onDuplicate={() => handleDuplicate(s.id || s._id || '')}
                     onDelete={() => handleDelete(s.id || s._id || '')}
+                    extraActions={[{
+                      label: 'Export PDF',
+                      icon: <Download className="h-4 w-4 mr-2" />,
+                      onClick: () => window.open(`/api/export/supplier-quote/${s.id || s._id}`, '_blank'),
+                    }]}
                   />
                 </TableCell>
               </TableRow>

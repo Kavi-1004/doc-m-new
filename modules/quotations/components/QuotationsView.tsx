@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, FileText, Truck } from 'lucide-react'
+import { Plus, FileText, Truck, Download, Mail } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -15,6 +15,7 @@ import { RowActions } from '@/components/shared/RowActions'
 import { StatusPill } from '@/components/shared/StatusPill'
 import { Pagination } from '@/components/shared/Pagination'
 import { fmtMoney } from '@/lib/utils'
+import { SendEmailDialog } from '@/components/shared/SendEmailDialog'
 import type { Quotation } from '@/types'
 
 interface QuotationsResponse {
@@ -29,6 +30,8 @@ export function QuotationsView() {
   const router = useRouter()
   const { company } = useAppContext()
   const [search, setSearch] = useState('')
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false)
+  const [emailTarget, setEmailTarget] = useState<{ id: string; customer: string } | null>(null)
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(20)
   const params = new URLSearchParams({ page: String(page), limit: String(limit) })
@@ -129,6 +132,16 @@ export function QuotationsView() {
                         icon: <Truck className="h-4 w-4 mr-2" />,
                         onClick: () => handleGenerateDO(q.id || q._id || ''),
                       },
+                      {
+                        label: 'Export PDF',
+                        icon: <Download className="h-4 w-4 mr-2" />,
+                        onClick: () => window.open(`/api/export/quotation/${q.id || q._id}`, '_blank'),
+                      },
+                      {
+                        label: 'Send Email',
+                        icon: <Mail className="h-4 w-4 mr-2" />,
+                        onClick: () => { setEmailTarget({ id: q.id || q._id || '', customer: q.customer }); setEmailDialogOpen(true) },
+                      },
                     ]}
                   />
                 </TableCell>
@@ -139,6 +152,14 @@ export function QuotationsView() {
       </CardContent>
         {data && <Pagination page={data.page} pages={data.pages} total={data.total} limit={data.limit} onPageChange={setPage} onLimitChange={v => { setLimit(v); setPage(1) }} />}
       </Card>
+      {emailTarget && (
+        <SendEmailDialog
+          open={emailDialogOpen}
+          onOpenChange={setEmailDialogOpen}
+          documentType="quotation"
+          documentId={emailTarget.id}
+        />
+      )}
     </div>
   )
 }

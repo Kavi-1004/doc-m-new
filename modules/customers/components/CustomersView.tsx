@@ -36,7 +36,7 @@ export function CustomersView() {
       const payload = {
         company: original.company + ' (Copy)', contact: original.contact,
         email: original.email, phone: original.phone, tax: original.tax,
-        billing: original.billing, shipping: original.shipping, notes: original.notes,
+        billing: original.billing || original.shipping, shipping: original.billing || original.shipping, notes: original.notes,
         _user: 'System',
       }
       const created = await apiMutate('/api/customers', 'POST', payload)
