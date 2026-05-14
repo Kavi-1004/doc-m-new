@@ -26,4 +26,6 @@ export interface Quotation {
   showSignature?: boolean
   discount?: number
   tax?: number
+  currency?: string
+  poDocument?: string
 }

@@ -2,12 +2,13 @@
 
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus } from 'lucide-react'
+import { Plus, PackageCheck } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useApi, apiMutate } from '@/hooks/use-api'
+import { useAppContext } from '@/lib/app-context'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { FilterBar } from '@/components/shared/FilterBar'
 import { RowActions } from '@/components/shared/RowActions'
@@ -23,6 +24,7 @@ interface PurchaseOrdersResponse {
 
 export function PurchaseOrdersView() {
   const router = useRouter()
+  const { company } = useAppContext()
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(20)
@@ -30,6 +32,36 @@ export function PurchaseOrdersView() {
   if (search) params.set('q', search)
   const { data, refresh } = useApi<PurchaseOrdersResponse>(`/api/purchase-orders?${params}`)
   const purchaseOrders = data?.items || []
+
+  const handleDuplicate = useCallback(async (id: string) => {
+    try {
+      const original = await (await fetch(`/api/purchase-orders/${id}`)).json()
+      if (!original || original.error) { toast.error('Failed to load PO'); return }
+      const payload = {
+        supplier: original.supplier, linkedQuote: original.linkedQuote,
+        date: new Date().toISOString().slice(0, 10), expectedDelivery: original.expectedDelivery,
+        notes: original.notes, status: 'PENDING', amount: original.amount,
+        items: original.items, companyCode: company.code, _user: 'System',
+      }
+      const created = await apiMutate('/api/purchase-orders', 'POST', payload)
+      toast.success(`PO duplicated: ${(created as Record<string, string>).number}`)
+      refresh()
+    } catch (err) {
+      toast.error((err as Error).message)
+    }
+  }, [company.code, refresh])
+
+  const handleGenerateDO = useCallback(async (id: string) => {
+    try {
+      const dor = await apiMutate(`/api/purchase-orders/${id}`, 'PUT', {
+        _action: 'generate_do', companyCode: company.code, _user: 'System',
+      })
+      toast.success(`DO ${(dor as Record<string, string>).number} created from PO`)
+      router.push(`/delivery-orders/${(dor as Record<string, string>).id}/edit`)
+    } catch (err) {
+      toast.error((err as Error).message)
+    }
+  }, [company.code, router])
 
   const handleDelete = useCallback(async (id: string) => {
     try {
@@ -66,7 +98,15 @@ export function PurchaseOrdersView() {
                   <RowActions
                     onView={() => router.push(`/purchase-orders/${p.id || p._id}`)}
                     onEdit={() => router.push(`/purchase-orders/${p.id || p._id}/edit`)}
+                    onDuplicate={() => handleDuplicate(p.id || p._id || '')}
                     onDelete={() => handleDelete(p.id || p._id || '')}
+                    extraActions={[
+                      {
+                        label: 'Generate DO',
+                        icon: <PackageCheck className="h-4 w-4 mr-2" />,
+                        onClick: () => handleGenerateDO(p.id || p._id || ''),
+                      },
+                    ]}
                   />
                 </TableCell>
               </TableRow>

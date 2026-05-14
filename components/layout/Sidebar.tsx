@@ -3,21 +3,49 @@
 import { useMemo } from 'react'
 import { ChevronRight, Sparkles } from 'lucide-react'
 import { NAV } from '@/lib/constants'
+import { hasPermission } from '@/lib/rbac'
 import type { Company } from '@/types'
+
+const NAV_KEY_TO_MODULE: Record<string, string> = {
+  dashboard: 'dashboard',
+  companies: 'companies',
+  users: 'users',
+  customers: 'customers',
+  suppliers: 'suppliers',
+  quotations: 'quotations',
+  'sup-quotes': 'supplier-quotes',
+  po: 'purchase-orders',
+  do: 'delivery-orders',
+  invoices: 'invoices',
+  expenses: 'expenses',
+  profit: 'profitability',
+  audit: 'audit',
+  reports: 'reports',
+  settings: 'settings',
+}
 
 interface SidebarProps {
   view: string
   setView: (v: string) => void
   company: Company
   sidebarOpen: boolean
+  userRole?: string
 }
 
-export function Sidebar({ view, setView, company, sidebarOpen }: SidebarProps) {
+export function Sidebar({ view, setView, company, sidebarOpen, userRole = 'VIEWER' }: SidebarProps) {
+  const filteredNav = useMemo(() => {
+    return NAV.filter(n => {
+      const mod = NAV_KEY_TO_MODULE[n.key]
+      if (!mod) return true
+      return hasPermission(userRole, mod, 'read')
+    })
+  }, [userRole])
+
   const groups = useMemo(() => {
     const map: Record<string, typeof NAV> = {}
-    NAV.forEach(n => { (map[n.group] = map[n.group] || []).push(n) })
+    filteredNav.forEach(n => { (map[n.group] = map[n.group] || []).push(n) })
     return map
-  }, [])
+  }, [filteredNav])
 
   return (
     <aside className={`fixed lg:static z-40 inset-y-0 left-0 w-72 bg-slate-900 text-slate-200 flex flex-col transform transition-transform duration-200 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>

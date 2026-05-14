@@ -60,6 +60,26 @@ export function QuotationsView() {
     }
   }, [company.code, router])
 
+  const handleDuplicate = useCallback(async (id: string) => {
+    try {
+      const original = await (await fetch(`/api/quotations/${id}`)).json()
+      if (!original || original.error) { toast.error('Failed to load quotation'); return }
+      const payload = {
+        customer: original.customer, project: original.project,
+        date: new Date().toISOString().slice(0, 10), validity: original.validity,
+        status: 'DRAFT', items: original.items, terms: original.terms,
+        attnName: original.attnName, attnEmail: original.attnEmail,
+        salesPerson: original.salesPerson, discount: original.discount, tax: original.tax,
+        currency: original.currency, companyCode: company.code, _user: 'System',
+      }
+      const created = await apiMutate('/api/quotations', 'POST', payload)
+      toast.success(`Quotation duplicated: ${(created as Record<string, string>).number}`)
+      refresh()
+    } catch (err) {
+      toast.error((err as Error).message)
+    }
+  }, [company.code, refresh])
+
   const handleDelete = useCallback(async (id: string) => {
     try {
       await apiMutate(`/api/quotations/${id}`, 'DELETE')
@@ -96,6 +116,7 @@ export function QuotationsView() {
                   <RowActions
                     onView={() => router.push(`/quotations/${q.id || q._id}`)}
                     onEdit={() => router.push(`/quotations/${q.id || q._id}/edit`)}
+                    onDuplicate={() => handleDuplicate(q.id || q._id || '')}
                     onDelete={() => handleDelete(q.id || q._id || '')}
                     extraActions={[
                       {

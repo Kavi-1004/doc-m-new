@@ -31,6 +31,23 @@ export function SupplierQuotesView() {
   const { data, refresh } = useApi<SupplierQuotesResponse>(`/api/supplier-quotes?${params}`)
   const supplierQuotes = data?.items || []
 
+  const handleDuplicate = useCallback(async (id: string) => {
+    try {
+      const original = await (await fetch(`/api/supplier-quotes/${id}`)).json()
+      if (!original || original.error) { toast.error('Failed to load supplier quote'); return }
+      const payload = {
+        supplier: original.supplier, linkedQuote: original.linkedQuote,
+        date: new Date().toISOString().slice(0, 10), amount: original.amount,
+        status: 'PENDING', items: original.items, notes: original.notes, _user: 'System',
+      }
+      const created = await apiMutate('/api/supplier-quotes', 'POST', payload)
+      toast.success(`Supplier quote duplicated: ${(created as Record<string, string>).number}`)
+      refresh()
+    } catch (err) {
+      toast.error((err as Error).message)
+    }
+  }, [refresh])
+
   const handleDelete = useCallback(async (id: string) => {
     try {
       await apiMutate(`/api/supplier-quotes/${id}`, 'DELETE')
@@ -67,6 +84,7 @@ export function SupplierQuotesView() {
                   <RowActions
                     onView={() => router.push(`/supplier-quotes/${s.id || s._id}`)}
                     onEdit={() => router.push(`/supplier-quotes/${s.id || s._id}/edit`)}
+                    onDuplicate={() => handleDuplicate(s.id || s._id || '')}
                     onDelete={() => handleDelete(s.id || s._id || '')}
                   />
                 </TableCell>

@@ -144,6 +144,7 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
         setView={handleNavigate}
         company={activeCompany}
         sidebarOpen={sidebarOpen}
+        userRole={currentUser.role}
       />
 
       <div className="flex-1 min-w-0 flex flex-col">
